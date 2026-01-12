@@ -32,17 +32,42 @@ function init() {
     renderMapObjects();
     populateSelect();
     setupEventListeners();
-    // Mobile Panel Toggle
+    // Mobile Panel Toggle & Swipe
     const panelHandle = document.getElementById('panel-handle');
     const controlPanel = document.getElementById('control-panel');
 
     if (panelHandle && controlPanel) {
+        // Toggle on click
         panelHandle.addEventListener('click', () => {
             controlPanel.classList.toggle('collapsed');
         });
 
-        // Optional: Collapse when clicking on map (if expanded) - purely user preference, but let's stick to manual toggle for now to avoid frustration.
-        // Actually, collapsing when selecting a line might be nice?
+        // Swipe Detection
+        let startY = 0;
+        let currentY = 0;
+
+        panelHandle.addEventListener('touchstart', (e) => {
+            startY = e.touches[0].clientY;
+            currentY = startY;
+        }, { passive: true });
+
+        panelHandle.addEventListener('touchmove', (e) => {
+            currentY = e.touches[0].clientY;
+            // Optional: Real-time drag effect could go here
+        }, { passive: true });
+
+        panelHandle.addEventListener('touchend', () => {
+            const diff = currentY - startY;
+            const threshold = 50; // min swipe distance
+
+            if (diff > threshold) {
+                // Swiped Down -> Collapse
+                controlPanel.classList.add('collapsed');
+            } else if (diff < -threshold) {
+                // Swiped Up -> Expand
+                controlPanel.classList.remove('collapsed');
+            }
+        });
     }
 }
 

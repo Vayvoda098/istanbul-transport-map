@@ -23,60 +23,62 @@
         <div id="map"></div>
 
         <div class="control-panel" id="control-panel">
-            <!-- Mobile Toggle Handle -->
+            <!-- Mobile Toggle Handle - OUTSIDE SCROLL AREA -->
             <div class="panel-handle" id="panel-handle">
                 <div class="handle-bar"></div>
             </div>
 
-            <div class="logo">
-                <i class="fas fa-map-marked-alt"></i> İstanbul Raylı
-            </div>
+            <!-- Scrollable Content Container -->
+            <div class="panel-content">
+                <div class="logo">
+                    <i class="fas fa-map-marked-alt"></i> İstanbul Raylı
+                </div>
 
-            <div class="control-group">
-                <label for="line-select">Hat Seçiniz</label>
-                <div class="custom-select-wrapper">
-                    <select id="line-select">
-                        <option value="">Tüm Hatları Göster</option>
-                        <!-- Options populated by JS -->
-                    </select>
+                <div class="control-group">
+                    <label for="line-select">Hat Seçiniz</label>
+                    <div class="custom-select-wrapper">
+                        <select id="line-select">
+                            <option value="">Tüm Hatları Göster</option>
+                            <!-- Options populated by JS -->
+                        </select>
+                    </div>
                 </div>
-            </div>
 
-            <div class="control-group">
-                <label>Filtrele</label>
-                <div class="filter-buttons">
-                    <button class="filter-btn active" data-type="all">Tümü</button>
-                    <button class="filter-btn" data-type="metrobus">Metrobüs</button>
-                    <button class="filter-btn" data-type="metro">Metro</button>
+                <div class="control-group">
+                    <label>Filtrele</label>
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" data-type="all">Tümü</button>
+                        <button class="filter-btn" data-type="metrobus">Metrobüs</button>
+                        <button class="filter-btn" data-type="metro">Metro</button>
+                    </div>
                 </div>
-            </div>
 
-            <div class="control-group actions">
-                <div class="search-container">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" id="location-search" placeholder="Konum ara... (örn: Kadıköy)"
-                        autocomplete="off">
-                    <button id="geo-btn" class="geo-btn" title="Konumumu Bul"><i
-                            class="fas fa-location-arrow"></i></button>
-                    <div id="search-results" class="search-results hidden"></div>
+                <div class="control-group actions">
+                    <div class="search-container">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="location-search" placeholder="Konum ara..." autocomplete="off">
+                        <button id="geo-btn" class="geo-btn" title="Konumumu Bul"><i
+                                class="fas fa-location-arrow"></i></button>
+                        <div id="search-results" class="search-results hidden"></div>
+                    </div>
                 </div>
-            </div>
 
-            <div id="info-box" class="info-box hidden">
-                <div class="info-item">
-                    <span class="label">Seçili Hat:</span>
-                    <span id="info-line-name" class="value">-</span>
+                <div id="info-box" class="info-box hidden">
+                    <div class="info-item">
+                        <span class="label">Seçili Hat:</span>
+                        <span id="info-line-name" class="value">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Mesafe:</span>
+                        <span id="info-distance" class="value">-</span>
+                    </div>
+                    <!-- Station List Container -->
+                    <div id="station-list-container" class="station-list-wrapper hidden">
+                        <h3>Duraklar</h3>
+                        <ul id="station-list" class="station-list"></ul>
+                    </div>
+                    <p class="hint">Haritadaki işaretlediğiniz konuma olan kuş uçuşu mesafe.</p>
                 </div>
-                <div class="info-item">
-                    <span class="label">Mesafe:</span>
-                    <span id="info-distance" class="value">-</span>
-                </div>
-                <!-- Station List Container -->
-                <div id="station-list-container" class="station-list-wrapper hidden">
-                    <h3>Duraklar</h3>
-                    <ul id="station-list" class="station-list"></ul>
-                </div>
-                <p class="hint">Haritadaki işaretlediğiniz konuma olan kuş uçuşu mesafe.</p>
             </div>
         </div>
     </div>

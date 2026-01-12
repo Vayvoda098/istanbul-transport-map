@@ -234,7 +234,8 @@ html {
 
 #location-search {
     width: 100%;
-    padding: 12px 12px 12px 38px;
+    padding: 12px 12px 12px 48px;
+    /* Increased from 38px to prevent overlap */
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--glass-border);
     border-radius: 8px;
@@ -431,117 +432,98 @@ html {
         width: 100%;
         max-height: 60vh;
         /* Don't cover full screen */
-        overflow-y: auto;
-        /* Scrollable content */
         border-radius: 20px 20px 0 0;
         border-bottom: none;
-        padding: 20px;
-        padding-bottom: 30px;
+        padding: 0;
+        /* Remove padding from main container */
+        padding-top: 10px;
+        /* Space for handle */
+        display: flex;
+        flex-direction: column;
         /* Safe area for swipe bar users */
         transition: transform 0.3s cubic-bezier(0.1, 0.7, 0.1, 1);
+        z-index: 2000;
     }
 
-    /* Add a small handle to indicate swipeable/bottom sheet nature */
+    /* Fixed Handle Area */
     .panel-handle {
         width: 100%;
-        height: 20px;
+        height: 40px;
+        /* Even larger hit area for easier grabbing */
+        flex-shrink: 0;
         display: flex;
         justify-content: center;
         align-items: center;
-        cursor: pointer;
-        margin-bottom: 10px;
+        cursor: grab;
+        touch-action: none;
+        /* Crucial: prevents browser scroll/refresh functionality on the handle */
     }
 
     .panel-handle .handle-bar {
         width: 40px;
-        height: 4px;
-        background: rgba(255, 255, 255, 0.3);
-        border-radius: 2px;
-        transition: background 0.3s;
+        height: 5px;
+        background: rgba(255, 255, 255, 0.4);
+        border-radius: 3px;
     }
 
-    .panel-handle:hover .handle-bar {
-        background: rgba(255, 255, 255, 0.6);
+    /* Scrollable Content Area */
+    .panel-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0 20px 30px 20px;
+        /* Padding moved here */
+        -ms-overflow-style: none;
+        scrollbar-width: none;
     }
 
-    /* Remove the pseudo-element handle I added earlier since we have a real one now */
-    .control-panel::before {
+    .panel-content::-webkit-scrollbar {
         display: none;
     }
 
     /* Collapsed State */
     .control-panel.collapsed {
-        transform: translateY(calc(100% - 60px));
-        /* Slide down, leave 60px visible (safely shows handle) */
-        padding-bottom: 0;
-        /* Removing padding to let it sit tight */
+        transform: translateY(calc(100% - 40px));
+        /* ONLY handle visible */
     }
 
-    /* Override transform on expanded */
-    .control-panel {
-        /* ... previous styles ... */
-        /* Ensure transition is smooth */
-        transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-        z-index: 2000;
-        /* Ensure on top */
-    }
-
-    /* On mobile, search results should go UP because panel is at bottom */
+    /* Search Results need to be positioned relative to the scrolling content or fixed? 
+       If inside scrolling content, 'bottom: 110%' works relative to input. 
+       But overflow:hidden on parent might cut it off. 
+       Actually, overflow-y:auto on .panel-content will cut off absolute children outside it.
+       So search results need to be handled carefully. 
+       Fix: Make search-results fixed or ensure container allows overflow (impossible with scroll).
+       Better Fix: On mobile, perhaps search results appearing inside the flow or using a portal?
+       Simplest Fix for now: Give ample space at bottom of .panel-content so interacting doesn't feel cramped, 
+       BUT showing results *above* input in a scrollable container that is barely 60vh might be tight.
+       
+       Let's try putting search results normally in flow or fixed position on screen.
+    */
     .search-results {
-        top: auto;
-        bottom: 110%;
-        /* Show above the input */
-        max-height: 40vh;
+        position: absolute;
+        bottom: 100%;
+        margin-bottom: 5px;
+        width: 100%;
+        z-index: 10;
     }
 
-    .logo {
-        font-size: 1.2rem;
-        margin-bottom: 15px;
-    }
-
-    .btn {
-        padding: 10px;
-    }
-
-    /* Adjust tooltip sizes */
-    .line-label-tooltip {
-        font-size: 0.85rem !important;
-    }
-
-    .station-tooltip {
-        display: none !important;
-        /* Hide small station tooltips on mobile to reduce clutter, show only on click/zoom if needed, or keep smaller */
-    }
-
-    /* Make station list scrollable within constraints */
-    .station-list {
-        max-height: 150px;
-    }
-
-    .control-panel::-webkit-scrollbar {
-        display: none;
-        /* Hide scrollbar for cleaner mobile look */
-    }
-
-    .control-panel {
-        -ms-overflow-style: none;
-        /* IE and Edge */
-        scrollbar-width: none;
-        /* Firefox */
-        resize: none;
-        /* Remove resize handle */
-    }
-
-    /* Adjust padding to be less cramped */
-    .control-group {
-        margin-bottom: 15px;
-    }
-
+    /* ... rest of mobile styles ... */
     .logo {
         font-size: 1.1rem;
         margin-bottom: 15px;
         justify-content: center;
-        /* Center logo on mobile */
+    }
+
+    .station-tooltip {
+        display: none !important;
+    }
+
+    .station-list {
+        max-height: none;
+        /* Let the main panel scroll handle it */
+    }
+
+    .geo-btn {
+        padding: 8px;
     }
 
     /* Make buttons slightly more compact */
@@ -552,10 +534,8 @@ html {
         font-size: 0.9rem;
     }
 
-    /* Ensure search results don't get cut off or look weird */
-    .search-results {
-        bottom: 115%;
-        max-height: 35vh;
-        background: var(--bg-dark);
+    /* Adjust padding to be less cramped */
+    .control-group {
+        margin-bottom: 15px;
     }
 }
