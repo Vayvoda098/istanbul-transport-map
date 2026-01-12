@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İstanbul Ulaşım Haritası</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+
+    <div id="app-container">
+        <div id="map"></div>
+
+        <div class="control-panel" id="control-panel">
+            <!-- Mobile Toggle Handle -->
+            <div class="panel-handle" id="panel-handle">
+                <div class="handle-bar"></div>
+            </div>
+
+            <div class="logo">
+                <i class="fas fa-map-marked-alt"></i> İstanbul Raylı
+            </div>
+
+            <div class="control-group">
+                <label for="line-select">Hat Seçiniz</label>
+                <div class="custom-select-wrapper">
+                    <select id="line-select">
+                        <option value="">Tüm Hatları Göster</option>
+                        <!-- Options populated by JS -->
+                    </select>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Filtrele</label>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-type="all">Tümü</button>
+                    <button class="filter-btn" data-type="metrobus">Metrobüs</button>
+                    <button class="filter-btn" data-type="metro">Metro</button>
+                </div>
+            </div>
+
+            <div class="control-group actions">
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="location-search" placeholder="Konum ara... (örn: Kadıköy)"
+                        autocomplete="off">
+                    <button id="geo-btn" class="geo-btn" title="Konumumu Bul"><i
+                            class="fas fa-location-arrow"></i></button>
+                    <div id="search-results" class="search-results hidden"></div>
+                </div>
+            </div>
+
+            <div id="info-box" class="info-box hidden">
+                <div class="info-item">
+                    <span class="label">Seçili Hat:</span>
+                    <span id="info-line-name" class="value">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Mesafe:</span>
+                    <span id="info-distance" class="value">-</span>
+                </div>
+                <!-- Station List Container -->
+                <div id="station-list-container" class="station-list-wrapper hidden">
+                    <h3>Duraklar</h3>
+                    <ul id="station-list" class="station-list"></ul>
+                </div>
+                <p class="hint">Haritadaki işaretlediğiniz konuma olan kuş uçuşu mesafe.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- Turf.js for spatial analysis (distance) -->
+    <script src="https://unpkg.com/@turf/turf/turf.min.js"></script>
+
+    <!-- App Data & Scripts -->
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
