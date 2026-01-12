@@ -12,15 +12,23 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
 
 // State
 let allLayers = [];
-let userMarker = null;
+let userMarker1 = null; // First location marker
+let userMarker2 = null; // Second location marker
 let selectedLineId = null;
 let currentFilter = 'all';
-let searchTimeout = null;
+let searchTimeout1 = null;
+let searchTimeout2 = null;
 
 // DOM Elements
 const lineSelect = document.getElementById('line-select');
-const searchInput = document.getElementById('location-search');
-const searchResults = document.getElementById('search-results');
+const searchInput1 = document.getElementById('location-input-1');
+const searchInput2 = document.getElementById('location-input-2');
+const searchResults1 = document.getElementById('search-results-1');
+const searchResults2 = document.getElementById('search-results-2');
+const resetBtn1 = document.getElementById('reset-btn-1');
+const resetBtn2 = document.getElementById('reset-btn-2');
+const geoBtn1 = document.getElementById('geo-btn-1');
+const geoBtn2 = document.getElementById('geo-btn-2');
 const infoBox = document.getElementById('info-box');
 const infoLineName = document.getElementById('info-line-name');
 const infoDistance = document.getElementById('info-distance');
@@ -145,12 +153,28 @@ function renderMapObjects() {
                 fillOpacity: 1
             });
             circleMarker.addTo(map);
+
+            // Bind tooltip for hover (desktop)
             circleMarker.bindTooltip(station.name, {
                 permanent: false,
                 direction: 'top',
                 className: 'station-tooltip',
                 offset: [0, -5]
             });
+
+            // Add click handler for mobile to show popup
+            circleMarker.on('click', (e) => {
+                L.DomEvent.stopPropagation(e);
+                circleMarker.bindPopup(station.name, {
+                    closeButton: true,
+                    autoClose: true,
+                    closeOnClick: true
+                }).openPopup();
+            });
+
+            // Store station data for later use
+            circleMarker.stationData = station;
+
             return circleMarker;
         });
 
@@ -170,6 +194,9 @@ function selectLine(id) {
     selectedLineId = id;
     highlightLine(selectedLineId);
     calculateDistanceIfReady();
+    // Ensure both search results are closed when a line is selected
+    searchResults1.style.display = 'none';
+    searchResults2.style.display = 'none';
 }
 
 function populateSelect() {
@@ -196,10 +223,26 @@ function populateStationList(lineObj) {
         li.style.setProperty('--primary-color', lineObj.color);
 
         li.addEventListener('click', () => {
-            map.flyTo([station.lat, station.lng], 15, {
-                animate: true,
-                duration: 1
-            });
+            // Offset view on mobile
+            const latLng = [station.lat, station.lng];
+            const zoom = 15;
+
+            if (window.innerWidth <= 768) {
+                // Determine pixel offset based on panel height approx
+                const targetPoint = map.project(latLng, zoom);
+                targetPoint.y += 150; // Shift center down so point appears up
+                const targetLatLng = map.unproject(targetPoint, zoom);
+
+                map.flyTo(targetLatLng, zoom, {
+                    animate: true,
+                    duration: 1
+                });
+            } else {
+                map.flyTo(latLng, zoom, {
+                    animate: true,
+                    duration: 1
+                });
+            }
         });
 
         stationList.appendChild(li);
@@ -224,25 +267,105 @@ function setupEventListeners() {
         });
     });
 
-    searchInput.addEventListener('input', (e) => {
+    // === LOCATION INPUT 1 HANDLERS ===
+    searchInput1.addEventListener('input', (e) => {
         const query = e.target.value.trim();
-        clearTimeout(searchTimeout);
+        clearTimeout(searchTimeout1);
+
+        // Show/hide reset button
+        resetBtn1.style.display = query ? 'block' : 'none';
+
         if (query.length < 3) {
-            searchResults.classList.add('hidden');
+            searchResults1.style.display = 'none';
             return;
         }
-        searchTimeout = setTimeout(() => {
-            performSearch(query);
+        searchTimeout1 = setTimeout(() => {
+            performSearch(query, 1); // Pass input number
         }, 800);
     });
 
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.search-container')) {
-            searchResults.classList.add('hidden');
+    resetBtn1.addEventListener('click', () => {
+        searchInput1.value = '';
+        searchResults1.style.display = 'none';
+        resetBtn1.style.display = 'none';
+        if (userMarker1) {
+            map.removeLayer(userMarker1);
+            userMarker1 = null;
         }
+        calculateDistanceIfReady();
     });
 
+    geoBtn1.addEventListener('click', () => {
+        if (!navigator.geolocation) {
+            alert("Tarayıcınız konum servisini desteklemiyor.");
+            return;
+        }
+        geoBtn1.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                geoBtn1.innerHTML = '<i class="fas fa-location-arrow"></i>';
+                selectLocation(pos.coords.latitude, pos.coords.longitude, "Konumunuz (Başlangıç)", 1);
+            },
+            (err) => {
+                geoBtn1.innerHTML = '<i class="fas fa-location-arrow"></i>';
+                alert("Konum alınamadı. Lütfen izinleri kontrol edin.");
+            },
+            { enableHighAccuracy: true }
+        );
+    });
+
+    // === LOCATION INPUT 2 HANDLERS ===
+    searchInput2.addEventListener('input', (e) => {
+        const query = e.target.value.trim();
+        clearTimeout(searchTimeout2);
+
+        // Show/hide reset button
+        resetBtn2.style.display = query ? 'block' : 'none';
+
+        if (query.length < 3) {
+            searchResults2.style.display = 'none';
+            return;
+        }
+        searchTimeout2 = setTimeout(() => {
+            performSearch(query, 2); // Pass input number
+        }, 800);
+    });
+
+    resetBtn2.addEventListener('click', () => {
+        searchInput2.value = '';
+        searchResults2.style.display = 'none';
+        resetBtn2.style.display = 'none';
+        if (userMarker2) {
+            map.removeLayer(userMarker2);
+            userMarker2 = null;
+        }
+        calculateDistanceIfReady();
+    });
+
+    geoBtn2.addEventListener('click', () => {
+        if (!navigator.geolocation) {
+            alert("Tarayıcınız konum servisini desteklemiyor.");
+            return;
+        }
+        geoBtn2.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                geoBtn2.innerHTML = '<i class="fas fa-location-arrow"></i>';
+                selectLocation(pos.coords.latitude, pos.coords.longitude, "Konumunuz (Bitiş)", 2);
+            },
+            (err) => {
+                geoBtn2.innerHTML = '<i class="fas fa-location-arrow"></i>';
+                alert("Konum alınamadı. Lütfen izinleri kontrol edin.");
+            },
+            { enableHighAccuracy: true }
+        );
+    });
+
+    // Simple: close search when clicking map
     map.on('click', () => {
+        searchResults1.style.display = 'none';
+        searchResults2.style.display = 'none'; // Force hide
+
         if (selectedLineId) {
             selectedLineId = null;
             lineSelect.value = "";
@@ -250,87 +373,106 @@ function setupEventListeners() {
         }
     });
 
-    // Geolocation Button Listener
-    const geoBtn = document.getElementById('geo-btn');
-    if (geoBtn) {
-        geoBtn.addEventListener('click', () => {
-            if (!navigator.geolocation) {
-                alert("Tarayıcınız konum servisini desteklemiyor.");
-                return;
-            }
-            geoBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    geoBtn.innerHTML = '<i class="fas fa-location-arrow"></i>';
-                    const lat = pos.coords.latitude;
-                    const lng = pos.coords.longitude;
-                    selectLocation(lat, lng, "Konumunuz");
-                    map.setView([lat, lng], 14);
-                },
-                (err) => {
-                    geoBtn.innerHTML = '<i class="fas fa-location-arrow"></i>';
-                    alert("Konum alınamadı. Lütfen izinleri kontrol edin.");
-                },
-                { enableHighAccuracy: true }
-            );
-        });
-    }
+    map.on('dragstart', () => {
+        // Hide keyboard/results on mobile map drag
+        searchResults1.style.display = 'none';
+        searchResults2.style.display = 'none';
+    });
 }
 
-async function performSearch(query) {
-    searchResults.classList.remove('hidden');
+async function performSearch(query, inputNumber) {
+    const searchResults = inputNumber === 1 ? searchResults1 : searchResults2;
+
+    searchResults.style.display = 'block';
     searchResults.innerHTML = '<div class="result-item">Aranıyor...</div>';
 
     try {
         // Use viewbox for Istanbul boundaries instead of appending "Istanbul" text which can confuse results
         // Viewbox covering Istanbul roughly: 27.9, 40.8 to 29.9, 41.6
         const viewbox = "27.9,41.6,29.9,40.8";
-        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&viewbox=${viewbox}&bounded=1&addressdetails=1&limit=5`;
-
-        const response = await fetch(url);
+        // Add accept-language=tr for Turkish results
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&viewbox=${viewbox}&bounded=1&limit=5&accept-language=tr`);
         const data = await response.json();
 
         searchResults.innerHTML = '';
-        if (data.length === 0) {
-            searchResults.innerHTML = '<div class="result-item">Sonuç bulunamadı</div>';
-            return;
-        }
-
-        data.forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'result-item';
-
-            const addr = item.address || {};
-            // Prioritize specific landmark names or neighborhoods
-            const title = addr.amenity || addr.tourism || addr.building || addr.shop || addr.leisure || addr.railway || addr.suburb || addr.neighbourhood || item.name || query;
-            const fullDisplay = item.display_name;
-
-            div.innerHTML = `
-                <div style="font-weight:600; color:white;">${title}</div>
-                <div class="sub" style="font-size:0.8rem; color:#aaa; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                    ${fullDisplay}
-                </div>
-            `;
-
-            div.addEventListener('click', () => {
-                selectLocation(item.lat, item.lon, title);
+        if (data.length > 0) {
+            searchResults.style.display = 'block'; // Show results
+            data.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'result-item';
+                // Use display_name but maybe try to get local name if possible? Nominatim usually respects accept-language.
+                div.innerHTML = `
+                    <strong>${item.name || item.display_name.split(',')[0]}</strong>
+                    <span class="sub">${item.display_name}</span>
+                `;
+                div.addEventListener('click', () => {
+                    // FORCE CLOSE - use display none instead of hidden class
+                    searchResults.style.display = 'none';
+                    selectLocation(item.lat, item.lon, item.display_name, inputNumber);
+                });
+                searchResults.appendChild(div);
             });
-
-            searchResults.appendChild(div);
-        });
+        } else {
+            searchResults.style.display = 'none';
+        }
     } catch (error) {
+        console.error('Arama hatası:', error);
         searchResults.innerHTML = '<div class="result-item">Hata oluştu</div>';
     }
 }
 
-function selectLocation(lat, lng, name) {
+function selectLocation(lat, lng, name, inputNumber) {
     const latLng = [parseFloat(lat), parseFloat(lng)];
-    if (userMarker) map.removeLayer(userMarker);
-    userMarker = L.marker(latLng).addTo(map);
-    userMarker.bindPopup(`<b>${name}</b>`).openPopup();
-    map.setView(latLng, 14);
-    searchResults.classList.add('hidden');
+    const searchInput = inputNumber === 1 ? searchInput1 : searchInput2;
+    const searchResults = inputNumber === 1 ? searchResults1 : searchResults2;
+    const resetBtn = inputNumber === 1 ? resetBtn1 : resetBtn2;
+
+    // Determine which marker to use
+    let markerRef = inputNumber === 1 ? 'userMarker1' : 'userMarker2';
+    let markerColor = inputNumber === 1 ? '#28a745' : '#dc3545'; // Green for start, red for end
+
+    // Remove old marker if exists
+    if (inputNumber === 1 && userMarker1) {
+        map.removeLayer(userMarker1);
+    } else if (inputNumber === 2 && userMarker2) {
+        map.removeLayer(userMarker2);
+    }
+
+    // Create custom icon
+    const customIcon = L.divIcon({
+        className: 'custom-marker',
+        html: `<div style="background-color: ${markerColor}; width: 24px; height: 24px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>`,
+        iconSize: [24, 24],
+        iconAnchor: [12, 24]
+    });
+
+    // Create marker
+    const marker = L.marker(latLng, { icon: customIcon }).addTo(map);
+    marker.bindPopup(`<b>${name}</b>`, {
+        autoClose: true,
+        closeOnClick: true
+    }).openPopup();
+
+    // Store marker
+    if (inputNumber === 1) {
+        userMarker1 = marker;
+    } else {
+        userMarker2 = marker;
+    }
+
+    // Offset view on mobile
+    if (window.innerWidth <= 768) {
+        const targetPoint = map.project(latLng, 14);
+        targetPoint.y += 150;
+        const targetLatLng = map.unproject(targetPoint, 14);
+        map.setView(targetLatLng, 14);
+    } else {
+        map.setView(latLng, 14);
+    }
+
+    searchResults.style.display = 'none';
     searchInput.value = name;
+    resetBtn.style.display = 'block'; // Show reset button
     calculateDistanceIfReady();
 }
 
@@ -372,6 +514,17 @@ function highlightLine(lineId) {
                 item.markers.forEach(m => {
                     m.setRadius(4);
                     if (!map.hasLayer(m)) m.addTo(map);
+
+                    // Reset to hover-only tooltips (not permanent)
+                    if (m.stationData) {
+                        m.unbindTooltip();
+                        m.bindTooltip(m.stationData.name, {
+                            permanent: false,
+                            direction: 'top',
+                            className: 'station-tooltip',
+                            offset: [0, -5]
+                        });
+                    }
                 });
 
                 // Unbind Permanent, Rebind Hover Tooltip
@@ -410,14 +563,30 @@ function highlightLine(lineId) {
                     className: 'line-label-tooltip'
                 }).openTooltip();
 
-                // Markers
                 item.markers.forEach(m => {
                     m.setRadius(6);
                     m.bringToFront();
                     if (!map.hasLayer(m)) m.addTo(map);
+
+                    // Show permanent station name labels when line is selected
+                    if (m.stationData) {
+                        m.unbindTooltip();
+                        m.bindTooltip(m.stationData.name, {
+                            permanent: true,  // ALWAYS VISIBLE
+                            direction: 'top',
+                            className: 'station-tooltip',
+                            offset: [0, -8]
+                        }).openTooltip();
+                    }
                 });
 
-                map.fitBounds(item.polyline.getBounds(), { padding: [50, 50] });
+                // Smart FitBounds: Shift center up on mobile to avoid panel overlap
+                const isMobile = window.innerWidth <= 768;
+                const paddingOptions = isMobile
+                    ? { paddingTopLeft: [20, 20], paddingBottomRight: [20, 350] } // Push content way up
+                    : { padding: [50, 50] };
+
+                map.fitBounds(item.polyline.getBounds(), paddingOptions);
 
             } else {
                 // Dim Others

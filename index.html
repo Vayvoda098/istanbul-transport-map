@@ -23,17 +23,51 @@
         <div id="map"></div>
 
         <div class="control-panel" id="control-panel">
-            <!-- Mobile Toggle Handle - OUTSIDE SCROLL AREA -->
+            <!-- Mobile Toggle Handle -->
             <div class="panel-handle" id="panel-handle">
                 <div class="handle-bar"></div>
             </div>
 
-            <!-- Scrollable Content Container -->
-            <div class="panel-content">
+            <!-- Fixed Header Area (Logo + Search) -->
+            <div class="panel-header">
                 <div class="logo">
                     <i class="fas fa-map-marked-alt"></i> İstanbul Raylı
                 </div>
 
+                <!-- Location Input 1 -->
+                <div class="control-group">
+                    <label for="location-input-1">Başlangıç
+                        Noktası</label>
+                    <div class="search-container">
+                        <input type="text" id="location-input-1" placeholder="Konum girin" autocomplete="off">
+                        <button id="reset-btn-1" class="reset-btn" title="Temizle" style="display: none;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        <button id="geo-btn-1" class="geo-btn" title="Konumumu Kullan">
+                            <i class="fas fa-location-arrow"></i>
+                        </button>
+                        <div id="search-results-1" class="search-results" style="display: none;"></div>
+                    </div>
+                </div>
+
+                <!-- Location Input 2 -->
+                <div class="control-group">
+                    <label for="location-input-2">Bitiş Noktası</label>
+                    <div class="search-container">
+                        <input type="text" id="location-input-2" placeholder="Konum girin" autocomplete="off">
+                        <button id="reset-btn-2" class="reset-btn" title="Temizle" style="display: none;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        <button id="geo-btn-2" class="geo-btn" title="Konumumu Kullan">
+                            <i class="fas fa-location-arrow"></i>
+                        </button>
+                        <div id="search-results-2" class="search-results" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scrollable Content Container -->
+            <div class="panel-content">
                 <div class="control-group">
                     <label for="line-select">Hat Seçiniz</label>
                     <div class="custom-select-wrapper">
@@ -50,16 +84,6 @@
                         <button class="filter-btn active" data-type="all">Tümü</button>
                         <button class="filter-btn" data-type="metrobus">Metrobüs</button>
                         <button class="filter-btn" data-type="metro">Metro</button>
-                    </div>
-                </div>
-
-                <div class="control-group actions">
-                    <div class="search-container">
-                        <i class="fas fa-search search-icon"></i>
-                        <input type="text" id="location-search" placeholder="Konum ara..." autocomplete="off">
-                        <button id="geo-btn" class="geo-btn" title="Konumumu Bul"><i
-                                class="fas fa-location-arrow"></i></button>
-                        <div id="search-results" class="search-results hidden"></div>
                     </div>
                 </div>
 

@@ -66,6 +66,12 @@ html {
     color: var(--primary-color);
 }
 
+.panel-header {
+    padding: 0 20px;
+    flex-shrink: 0;
+    /* Don't shrink on mobile */
+}
+
 .control-group {
     margin-bottom: 20px;
 }
@@ -232,10 +238,19 @@ html {
     font-size: 0.9rem;
 }
 
-#location-search {
+
+.search-container input:focus {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Match the search inputs with other inputs */
+#location-input-1,
+#location-input-2 {
     width: 100%;
-    padding: 12px 12px 12px 48px;
-    /* Increased from 38px to prevent overlap */
+    padding: 12px;
+    padding-right: 85px;
+    /* Space for both buttons */
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--glass-border);
     border-radius: 8px;
@@ -245,14 +260,10 @@ html {
     transition: all 0.2s;
 }
 
-#location-search:focus {
+#location-input-1:focus,
+#location-input-2:focus {
     border-color: var(--primary-color);
     background: rgba(255, 255, 255, 0.1);
-}
-
-.search-container input:focus {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.3);
 }
 
 .geo-btn {
@@ -272,6 +283,26 @@ html {
 
 .geo-btn:hover {
     color: var(--primary-color);
+}
+
+.reset-btn {
+    position: absolute;
+    right: 45px;
+    /* Position before geo button */
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 5px;
+    transition: color 0.2s;
+    z-index: 10;
+}
+
+.reset-btn:hover {
+    color: var(--accent-color);
 }
 
 .search-results {
@@ -309,6 +340,9 @@ html {
     color: var(--text-dim);
     display: block;
     margin-top: 2px;
+    /* Allow text wrap so full address is visible */
+    white-space: normal;
+    line-height: 1.2;
 }
 
 /* Tooltip Styles */
@@ -498,12 +532,37 @@ html {
        
        Let's try putting search results normally in flow or fixed position on screen.
     */
+    /* Utility Classes */
+    .hidden {
+        display: none !important;
+    }
+
+    /* Ensure search results don't get cut off or look weird */
     .search-results {
         position: absolute;
-        bottom: 100%;
-        margin-bottom: 5px;
+        /* Keep position absolute */
         width: 100%;
-        z-index: 10;
+        /* Keep width 100% */
+        top: 105%;
+        /* Show BELOW the input now */
+        bottom: auto;
+        /* Reset bottom */
+        margin-bottom: 5px;
+        /* Keep margin-bottom */
+        max-height: 35vh;
+        background: var(--bg-dark);
+        /* Ensure z-index is high */
+        z-index: 2005;
+        overflow-y: auto !important;
+        /* Force scroll */
+        -webkit-overflow-scrolling: touch;
+        /* Smooth scroll on iOS */
+        pointer-events: auto;
+        /* Ensure clicks/scrolls work */
+        touch-action: pan-y;
+        /* Allow vertical scrolling */
+        padding-bottom: 20px;
+        /* Ensure last item is fully visible */
     }
 
     /* ... rest of mobile styles ... */
@@ -513,9 +572,7 @@ html {
         justify-content: center;
     }
 
-    .station-tooltip {
-        display: none !important;
-    }
+    /* Keep station tooltips visible on mobile when line is selected */
 
     .station-list {
         max-height: none;
